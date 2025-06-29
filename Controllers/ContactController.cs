@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text.Json;
 using BP.Api.Service;
 using BP.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -14,34 +11,58 @@ namespace BP.Controllers
     [ApiController]
     public class ContactController : Controller
     {
-        private readonly IConfiguration configuration;
-        private readonly IContactService contactService;
+        private readonly IConfiguration _configuration;
+        private readonly IContactService _contactService;
+        private readonly ILogger<ContactController> _logger;
 
-        public ContactController(IConfiguration Configuration, IContactService contact)
+        public ContactController(IConfiguration configuration, IContactService contactService, ILogger<ContactController> logger)
         {
-            configuration = Configuration;
-            contactService = contact;
+            _configuration = configuration;
+            _contactService = contactService;
+            _logger = logger;
         }
 
         [HttpGet]
         public string Get()
         {
-            // TODO: Implement logic to retrieve all contacts
-            return configuration.GetSection("ReadMe").Value;
+            _logger.LogInformation("GET /api/contact çağrıldı");
+            return _configuration.GetSection("ReadMe").Value;
         }
+
         [HttpGet("{id}")]
         [ResponseCache(Duration = 10, Location = ResponseCacheLocation.Any, NoStore = false)]
         [ProducesResponseType(typeof(ContactDto), 200)]
-        public ContactDto GetContactById(int id)
+        [ProducesResponseType(404)]
+        public ActionResult<ContactDto> GetContactById(int id)
         {
-            return contactService.GetContactById(id);
+            _logger.LogInformation("GET /api/contact/{Id} çağrıldı", id);
 
+            var contact = _contactService.GetContactById(id);
+            if (contact == null)
+            {
+                _logger.LogWarning("Contact bulunamadı. Id: {Id}", id);
+                return NotFound();
+            }
+
+            return Ok(contact);
         }
-        [HttpPost()]
-        public ContactDto CreateContact([FromBody] ContactDto contactDto)
+
+        [HttpPost]
+        [ProducesResponseType(typeof(ContactDto), 200)]
+        [ProducesResponseType(400)]
+        public ActionResult<ContactDto> CreateContact([FromBody] ContactDto contactDto)
         {
-            //return contactService.CreateContact(contactDto);
-            return contactDto; // For now, just return the received DTO
+ var json = JsonSerializer.Serialize(contactDto);
+    _logger.LogInformation("Yeni bir contact oluşturuluyor: {ContactJson}", json);
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("Geçersiz model gönderildi: {@ModelState}", ModelState);
+                return BadRequest(ModelState);
+            }
+
+            // Normalde veritabanına kaydedersin
+            // var created = _contactService.CreateContact(contactDto);
+            return Ok(contactDto); // Şimdilik geleni döndürüyoruz
         }
     }
 }

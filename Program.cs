@@ -4,6 +4,8 @@ using BP.Api.Service;
 using BP.Extensions; // IContactService, ContactService burada tanımlıysa
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.Extensions.Logging; // Add this for logging extensions
+using Microsoft.Extensions.Logging.Log4Net.AspNetCore;
 
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -16,6 +18,10 @@ string? connectionString = configuration.GetConnectionString("DefaultConnection"
 Console.WriteLine($"Connection string: {connectionString}");
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.AddLog4Net("log4net.config");
+// Add services to the container.
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
 
 // Konfigürasyon nesnesini builder'a dahil et
 builder.Configuration.AddConfiguration(configuration);
@@ -49,7 +55,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.MapOpenApi();
 }
-
+app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseHttpsRedirection();
 
 // UseRouting mutlaka Authorization’dan önce olmalı

@@ -416,3 +416,13 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+# Log klasörleri ve dosyaları (Serilog, log4net vb.)
+logs/
+Logs/
+*.log
+*.log.*
+
+# log4net özel log dosyaları
+/log4net.config
+app.log
+Logs/logs.txt
