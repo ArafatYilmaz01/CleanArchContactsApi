@@ -10,7 +10,7 @@ A modular and scalable ASP.NET 9 Web API built with Clean Architecture principle
 - Swagger (OpenAPI)
 - Response Caching
 - Environment-based Configuration
-- 
+  
 ## 🚀 Technologies Used
 
 - [.NET 9](https://dotnet.microsoft.com/)
